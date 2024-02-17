@@ -2,6 +2,10 @@
 
 ## Quickstart
 
+```sh
+npm install
+```
+
 To start Express server & Vue app:
 
 ```sh
