@@ -11,8 +11,11 @@ npm run start
 ## Improvement ideas
 
 🔧 Add higher component color contrast
+
 🔧 Add a video quality select
+
 🔧 Add a light/dark theme toggle
+
 🔧 Add (request) error handling
 
 ## Automatically generated documentation
