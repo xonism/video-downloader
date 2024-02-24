@@ -1,6 +1,11 @@
-# video-downloader
+# 🎦 Video Downloader
 
 ## Quickstart
+
+Used versions:
+
+-  node: v20.11.1
+-  npm: 10.4.0
 
 ```sh
 npm install
@@ -23,6 +28,10 @@ npm run start
 🔧 Add (request) error handling
 
 🔧 Add file name edit
+
+🔧 Add unit tests
+
+---
 
 ## Automatically generated documentation
 
