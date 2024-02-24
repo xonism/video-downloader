@@ -40,13 +40,13 @@ function setVideoProcessingFinishedState(): void {
 
 function isDownloadingDisabled(): boolean {
    return (
-      videos.value.some((video) => video.status === VideoStatus.PENDING) ||
+      videos.value.some((video) => video.status === VideoStatus.PROCESSING) ||
       videos.value.every((video) => video.status === VideoStatus.DOWNLOADED)
    );
 }
 
 function isAddingDisabled(): boolean {
-   return videos.value.some((video) => video.status === VideoStatus.PENDING);
+   return videos.value.some((video) => video.status === VideoStatus.PROCESSING);
 }
 
 async function processVideo(video: IVideo): Promise<void> {
@@ -54,7 +54,7 @@ async function processVideo(video: IVideo): Promise<void> {
       return;
    }
 
-   video.status = VideoStatus.PENDING;
+   video.status = VideoStatus.PROCESSING;
 
    const result: IFetchResult = await videoService.fetchVideo(video.url);
 

@@ -6,6 +6,6 @@ export interface IVideo {
 
 export enum VideoStatus {
    INITIALIZED,
-   PENDING,
+   PROCESSING,
    DOWNLOADED,
 }

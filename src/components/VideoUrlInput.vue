@@ -15,8 +15,8 @@ const FILE_NAME_LABEL = 'Expected file name';
       class="input-field"
       prepend-icon="mdi-video"
       :label="VIDEO_URL_LABEL"
-      :disabled="video.status === VideoStatus.PENDING"
-      :loading="video.status === VideoStatus.PENDING"
+      :disabled="video.status === VideoStatus.PROCESSING"
+      :loading="video.status === VideoStatus.PROCESSING"
       clearable
    >
    </v-text-field>
