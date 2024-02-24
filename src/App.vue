@@ -4,14 +4,13 @@ import VideoUrlInput from './components/VideoUrlInput.vue';
 import { videoService } from './services/VideoService';
 import { type IFetchResult } from './types/response.types';
 import { getFileNameFromContentDisposition } from './helpers/axios.helpers';
-import type { IVideo } from './components/types/video.types';
+import { type IVideo, VideoStatus } from './components/types/video.types';
 
 const videos: Ref<IVideo[]> = ref([
    {
       url: '',
-      isLoading: false,
-      isDownloaded: false,
       fileName: '',
+      status: VideoStatus.INITIALIZED,
    },
 ]);
 
@@ -41,34 +40,33 @@ function setVideoProcessingFinishedState(): void {
 
 function isDownloadingDisabled(): boolean {
    return (
-      videos.value.some((video) => video.isLoading) ||
-      videos.value.every((video) => video.isDownloaded)
+      videos.value.some((video) => video.status === VideoStatus.PENDING) ||
+      videos.value.every((video) => video.status === VideoStatus.DOWNLOADED)
    );
 }
 
 function isAddingDisabled(): boolean {
-   return videos.value.some((video) => video.isLoading);
+   return videos.value.some((video) => video.status === VideoStatus.PENDING);
 }
 
 async function processVideo(video: IVideo): Promise<void> {
-   if (video.isDownloaded) {
+   if (video.status === VideoStatus.DOWNLOADED) {
       return;
    }
 
-   video.isLoading = true;
+   video.status = VideoStatus.PENDING;
 
    const result: IFetchResult = await videoService.fetchVideo(video.url);
 
    if (!result.isSuccess) {
-      video.isLoading = false;
+      video.status = VideoStatus.INITIALIZED;
       setErrorState(result.error);
       return;
    }
 
    video.fileName = getFileNameFromContentDisposition(result.headers['content-disposition']);
    initDownloadToComputer(result.data, video.fileName);
-   video.isLoading = false;
-   video.isDownloaded = true;
+   video.status = VideoStatus.DOWNLOADED;
 }
 
 function setErrorState(error: string): void {
@@ -88,9 +86,8 @@ function initDownloadToComputer(responseData: BlobPart, fileName: string): void 
 function addVideo(): void {
    const newVideo: IVideo = {
       url: '',
-      isLoading: false,
-      isDownloaded: false,
       fileName: '',
+      status: VideoStatus.INITIALIZED,
    };
    videos.value.push(newVideo);
    downloadingDisabled.value = false;

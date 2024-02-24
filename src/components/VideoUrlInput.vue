@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { IVideo } from './types/video.types';
+import { VideoStatus, type IVideo } from './types/video.types';
 
 const props = defineProps(['video']);
 const video: IVideo = props.video;
@@ -15,8 +15,8 @@ const FILE_NAME_LABEL = 'Expected file name';
       class="input-field"
       prepend-icon="mdi-video"
       :label="VIDEO_URL_LABEL"
-      :disabled="video.isLoading"
-      :loading="video.isLoading"
+      :disabled="video.status === VideoStatus.PENDING"
+      :loading="video.status === VideoStatus.PENDING"
       clearable
    >
    </v-text-field>
@@ -29,7 +29,7 @@ const FILE_NAME_LABEL = 'Expected file name';
       :label="FILE_NAME_LABEL"
       disabled
    >
-      <template v-slot:append v-if="video.isDownloaded">
+      <template v-slot:append v-if="video.status === VideoStatus.DOWNLOADED">
          <v-icon color="green">mdi-check</v-icon>
       </template>
    </v-text-field>
