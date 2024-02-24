@@ -23,7 +23,7 @@ const snackbarText: Ref<string> = ref('');
 async function submit(): Promise<void> {
    setVideoProcessingStartedState();
 
-   await Promise.all(videos.value.map((video) => processVideo(video)));
+   await Promise.all(videos.value.map(processVideo));
 
    setVideoProcessingFinishedState();
 }
