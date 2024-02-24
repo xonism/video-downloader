@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Video } from '../Video';
+import type { IVideo } from './types/video.types';
 
 const props = defineProps(['video']);
-const video: Video = props.video;
+const video: IVideo = props.video;
 
 const VIDEO_URL_LABEL = 'Video URL';
 const FILE_NAME_LABEL = 'Expected file name';
@@ -10,7 +10,7 @@ const FILE_NAME_LABEL = 'Expected file name';
 
 <template>
    <v-text-field
-      v-if="!video.title"
+      v-if="!video.fileName"
       v-model="video.url"
       class="input-field"
       prepend-icon="mdi-video"
@@ -22,8 +22,8 @@ const FILE_NAME_LABEL = 'Expected file name';
    </v-text-field>
 
    <v-text-field
-      v-if="video.title"
-      v-model="video.title"
+      v-if="video.fileName"
+      v-model="video.fileName"
       class="input-field"
       prepend-icon="mdi-video"
       :label="FILE_NAME_LABEL"

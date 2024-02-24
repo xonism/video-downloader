@@ -1,99 +1,99 @@
 <script setup lang="ts">
 import { ref, type Ref } from 'vue';
-import axios, { type AxiosResponse } from 'axios';
 import VideoUrlInput from './components/VideoUrlInput.vue';
-import type { Video } from './Video';
+import { videoService } from './services/VideoService';
+import { type IFetchResult } from './types/response.types';
+import { getFileNameFromContentDisposition } from './helpers/axios.helpers';
+import type { IVideo } from './components/types/video.types';
 
-const videos: Ref<Video[]> = ref([
+const videos: Ref<IVideo[]> = ref([
    {
       url: '',
       isLoading: false,
       isDownloaded: false,
-      title: '',
+      fileName: '',
    },
 ]);
 
-const downloadingDisabled = ref(false);
-const addingDisabled = ref(false);
+const downloadingDisabled: Ref<boolean> = ref(false);
+const addingDisabled: Ref<boolean> = ref(false);
 
-const isSnackbarDisplayed = ref(false);
-const snackbarText = ref('');
+const isSnackbarDisplayed: Ref<boolean> = ref(false);
+const snackbarText: Ref<string> = ref('');
 
-function submit() {
+async function submit(): Promise<void> {
    setVideoProcessingStartedState();
 
-   videos.value.forEach(async (video) => {
-      if (video.isDownloaded) {
-         return;
-      }
+   await Promise.all(videos.value.map((video) => processVideo(video)));
 
-      video.isLoading = true;
-
-      axios
-         .get(`http://localhost:3000/video?url=${video.url}`, {
-            responseType: 'blob',
-         })
-         .then((res) => {
-            video.title = getFileName(res.headers);
-
-            initDownloadToComputer(res.data, res.headers);
-            video.isLoading = false;
-            video.isDownloaded = true;
-            setVideoProcessingFinishedState();
-         })
-         .catch((error) => {
-            video.isLoading = false;
-            isSnackbarDisplayed.value = true;
-            snackbarText.value = error.message;
-            setVideoProcessingFinishedState();
-         });
-   });
+   setVideoProcessingFinishedState();
 }
 
-function initDownloadToComputer(responseData: BlobPart, responseHeaders: AxiosResponse['headers']) {
-   const link = document.createElement('a');
-   link.href = window.URL.createObjectURL(new Blob([responseData]));
-   link.setAttribute('download', getFileName(responseHeaders));
-
-   document.body.appendChild(link);
-   link.click();
-}
-
-function setVideoProcessingStartedState() {
+function setVideoProcessingStartedState(): void {
    downloadingDisabled.value = true;
    addingDisabled.value = true;
 }
 
-function setVideoProcessingFinishedState() {
+function setVideoProcessingFinishedState(): void {
    downloadingDisabled.value = isDownloadingDisabled();
    addingDisabled.value = isAddingDisabled();
 }
 
-function addVideo() {
-   const newVideo: Video = {
-      url: '',
-      isLoading: false,
-      isDownloaded: false,
-      title: '',
-   };
-   videos.value.push(newVideo);
-   downloadingDisabled.value = false;
-}
-
-function getFileName(headers: AxiosResponse['headers']): string {
-   // attachment; filename="video.mp4" => video.mp4
-   return headers['content-disposition'].split('filename=')[1].replace(/^"(.*)"$/, '$1');
-}
-
-function isDownloadingDisabled() {
+function isDownloadingDisabled(): boolean {
    return (
       videos.value.some((video) => video.isLoading) ||
       videos.value.every((video) => video.isDownloaded)
    );
 }
 
-function isAddingDisabled() {
+function isAddingDisabled(): boolean {
    return videos.value.some((video) => video.isLoading);
+}
+
+async function processVideo(video: IVideo): Promise<void> {
+   if (video.isDownloaded) {
+      return;
+   }
+
+   video.isLoading = true;
+
+   const result: IFetchResult = await videoService.fetchVideo(video.url);
+
+   if (!result.isSuccess) {
+      video.isLoading = false;
+      setErrorState(result.error);
+      return;
+   }
+
+   video.fileName = getFileNameFromContentDisposition(result.headers['content-disposition']);
+   initDownloadToComputer(result.data, video.fileName);
+   video.isLoading = false;
+   video.isDownloaded = true;
+}
+
+function setErrorState(error: string): void {
+   snackbarText.value = error;
+   isSnackbarDisplayed.value = true;
+}
+
+function initDownloadToComputer(responseData: BlobPart, fileName: string): void {
+   const link: HTMLAnchorElement = document.createElement('a');
+   link.href = window.URL.createObjectURL(new Blob([responseData]));
+   link.setAttribute('download', fileName);
+
+   document.body.appendChild(link);
+   link.click();
+}
+
+function addVideo(): void {
+   const newVideo: IVideo = {
+      url: '',
+      isLoading: false,
+      isDownloaded: false,
+      fileName: '',
+   };
+   videos.value.push(newVideo);
+   downloadingDisabled.value = false;
 }
 </script>
 

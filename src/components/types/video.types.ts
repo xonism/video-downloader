@@ -1,6 +1,6 @@
-export interface Video {
+export interface IVideo {
    url: string;
    isLoading: boolean;
    isDownloaded: boolean;
-   title: string;
+   fileName: string;
 }
